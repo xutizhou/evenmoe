@@ -111,13 +111,15 @@ def to_load_balancer_kwargs(context: RuntimeContext) -> dict:
     :func:`to_placement_request` names, so the balancer's default L1 matches it.
     """
     layout = placement_adapter._expert_layout(context)
+    moe = context.config_bag("exec").moe
     return {
-        "algorithm": context.config_bag("exec").moe.moe_load_balancer_algorithm,
+        "algorithm": moe.moe_load_balancer_algorithm,
         "placement_policy": placement_adapter._placement_policy_name(context),
         "ep_size": layout["ep_size"],
         "source_rank": context.parallel.moe_ep_rank,
         "experts_per_rank": layout["num_local_physical_experts"],
         "collectives": _SGLangCollectives(context),
+        "a2a_backend": a2a_backend_from_sglang(getattr(moe, "moe_a2a_backend", None)),
     }
 
 
